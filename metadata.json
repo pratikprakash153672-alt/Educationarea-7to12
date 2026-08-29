@@ -1,0 +1,6 @@
+{
+  "name": "Class 7-12 Learning & Practice Platform",
+  "description": "A comprehensive educational platform for school students from Class 7 to Class 12 featuring unlimited practice questions, chapter tests, class promotion, and progress tracking across all major subjects.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
