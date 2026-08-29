@@ -1,19 +1,606 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Class 7-12 Learning & Practice Platform</title>
-    <meta name="description" content="A comprehensive educational platform for school students from Class 7 to Class 12 featuring unlimited practice questions, chapter tests, class promotion, and progress tracking across all major subjects." />
-    <meta property="og:title" content="Class 7-12 Learning & Practice Platform" />
-    <meta property="og:description" content="A comprehensive educational platform for school students from Class 7 to Class 12 featuring unlimited practice questions, chapter tests, class promotion, and progress tracking across all major subjects." />
-    <meta property="og:type" content="website" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <link rel="canonical" href="https://ais-dev-xuwveuiud5ohbyd7m7tsw5-720097202538.asia-southeast1.run.app" />
-  </head>
-  <body class="bg-slate-50 text-slate-800 antialiased selection:bg-indigo-500 selection:text-white min-h-screen">
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
-</html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Class 7-12 Learning & Practice Platform</title>
+  <meta name="description" content="A comprehensive educational platform for school students from Class 7 to Class 12 featuring unlimited practice questions, chapter tests, class promotion, and progress tracking across all major subjects." />
+  <meta property="og:title" content="Class 7-12 Learning & Practice Platform" />
+  <meta property="og:description" content="A comprehensive educational platform for school students from Class 7 to Class 12 featuring unlimited practice questions, chapter tests, class promotion, and progress tracking across all major subjects." />
+  <meta property="og:type" content="website" />
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+  <!-- Confetti Canvas for Promotion Celebration -->
+  <canvas id="confettiCanvas"></canvas>
 
+  <!-- Top Sticky Navigation Header -->
+  <header>
+    <div class="container header-inner">
+      <div class="brand-wrapper" onclick="app.switchTab('dashboard')">
+        <div class="brand-icon">🎓</div>
+        <div class="brand-text">
+          <h1>EduAscent</h1>
+          <p>Classes 7 to 12 Learning</p>
+        </div>
+      </div>
+
+      <!-- Desktop Nav Tabs -->
+      <nav>
+        <ul class="nav-tabs">
+          <li><button class="nav-tab-btn active" data-tab="dashboard">📊 Dashboard</button></li>
+          <li><button class="nav-tab-btn" data-tab="practice">📝 Practice Lab</button></li>
+          <li><button class="nav-tab-btn" data-tab="tests">⏱️ Timed Tests</button></li>
+          <li><button class="nav-tab-btn" data-tab="promotion">🎓 Promotion</button></li>
+          <li><button class="nav-tab-btn" data-tab="records">📈 Records</button></li>
+          <li><button class="nav-tab-btn" data-tab="achievements">🏆 Badges</button></li>
+        </ul>
+      </nav>
+
+      <!-- Header Actions -->
+      <div class="header-actions">
+        <div class="streak-pill" title="Continuous daily learning streak">
+          <span>🔥</span>
+          <span id="streakVal">1 Day Streak</span>
+        </div>
+
+        <button id="classBadgeBtn" class="class-badge-btn" title="Switch viewing or practice grade">
+          <span id="classBadgeText">Class 7 Active</span>
+          <span>▾</span>
+        </button>
+
+        <button id="mobileMenuToggleBtn" class="mobile-menu-btn" aria-label="Toggle Navigation Menu">
+          ☰
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Navigation Drawer -->
+    <div id="mobileNavDrawer" class="mobile-nav-drawer">
+      <button class="mobile-nav-btn active" data-tab="dashboard">📊 Dashboard</button>
+      <button class="mobile-nav-btn" data-tab="practice">📝 Practice Lab</button>
+      <button class="mobile-nav-btn" data-tab="tests">⏱️ Timed Tests</button>
+      <button class="mobile-nav-btn" data-tab="promotion">🎓 Class Promotion</button>
+      <button class="mobile-nav-btn" data-tab="records">📈 Academic Records</button>
+      <button class="mobile-nav-btn" data-tab="achievements">🏆 Badges & Honors</button>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="container">
+
+    <!-- =========================================================================
+         TAB 1: STUDENT DASHBOARD
+         ========================================================================= -->
+    <section id="view-dashboard" class="tab-content active">
+      <!-- Hero Welcome Card -->
+      <div class="hero-card">
+        <div class="hero-content">
+          <span class="badge badge-amber" style="margin-bottom: 0.5rem;">Academic Session 2026–2027</span>
+          <h2 id="heroStudentTitle">Welcome back, Student! (Class 7)</h2>
+          <p>
+            Master all core curriculum subjects across Classes 7 through 12. Complete procedural practice questions, pass timed assessments, and earn your promotion to the next grade.
+          </p>
+
+          <div class="hero-stats-row">
+            <div class="hero-stat-box">
+              <div class="hero-stat-val" id="heroGradeStat">Class 7</div>
+              <div class="hero-stat-label">Current Grade</div>
+            </div>
+            <div class="hero-stat-box">
+              <div class="hero-stat-val" id="heroSolvedStat">0</div>
+              <div class="hero-stat-label">Problems Solved</div>
+            </div>
+            <div class="hero-stat-box">
+              <div class="hero-stat-val" id="heroAccStat">0%</div>
+              <div class="hero-stat-label">Accuracy</div>
+            </div>
+            <div class="hero-stat-box">
+              <div class="hero-stat-val" id="heroTestsStat">0</div>
+              <div class="hero-stat-label">Assessments</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Class Promotion Readiness Banner -->
+      <div class="promotion-banner">
+        <div style="flex: 1;">
+          <span class="badge badge-primary">Next Grade Milestone</span>
+          <h3 style="font-size: 1.15rem; margin-top: 0.25rem;">Grade Promotion Status</h3>
+          <div class="progress-bar-bg">
+            <div id="dashPromoBarFill" class="progress-bar-fill" style="width: 0%;"></div>
+          </div>
+          <p id="dashPromoLabel" style="font-size: 0.85rem; color: var(--slate-600);">
+            Class 8 Readiness: 0% completed (Solve 10 questions and pass 1 test)
+          </p>
+        </div>
+        <div>
+          <button id="dashPromoActionBtn" class="btn btn-gold">
+            Class 8 Locked
+          </button>
+        </div>
+      </div>
+
+      <!-- Subjects Quick Grid -->
+      <div style="margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: flex-end;">
+        <div>
+          <h3 style="font-size: 1.25rem;">Core Curriculum Subjects</h3>
+          <p style="font-size: 0.85rem; color: var(--slate-500);">Interactive practice modules aligned with CBSE/NCERT curriculum</p>
+        </div>
+        <button class="btn btn-secondary" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;" onclick="app.switchTab('practice')">
+          Go to Practice Lab →
+        </button>
+      </div>
+
+      <div class="subject-grid">
+        <!-- Math -->
+        <div class="subject-card">
+          <div>
+            <div class="subject-head">
+              <div class="subject-icon math">📐</div>
+              <div>
+                <h4 style="font-size: 1.1rem;">Mathematics</h4>
+                <span class="badge badge-slate">Problem Solving</span>
+              </div>
+            </div>
+            <p class="subject-topics-list">
+              Integers, Linear Equations, Algebraic Expressions, Geometry, Quadratics, Trigonometry, Calculus.
+            </p>
+          </div>
+          <div style="display: flex; gap: 0.5rem;">
+            <button class="btn btn-primary" style="flex: 1;" onclick="app.currentPractice.subjectId = 'mathematics'; app.switchTab('practice');">Practice</button>
+            <button class="btn btn-secondary" onclick="app.startTest('mathematics'); app.switchTab('tests');">Test</button>
+          </div>
+        </div>
+
+        <!-- Science -->
+        <div class="subject-card">
+          <div>
+            <div class="subject-head">
+              <div class="subject-icon science">🔬</div>
+              <div>
+                <h4 style="font-size: 1.1rem;">Science</h4>
+                <span class="badge badge-slate">Inquiry & Laws</span>
+              </div>
+            </div>
+            <p class="subject-topics-list">
+              Force & Motion, Electricity, Ohm's Law, Acids & Bases, Modern Physics, Thermodynamics, Cell Biology.
+            </p>
+          </div>
+          <div style="display: flex; gap: 0.5rem;">
+            <button class="btn btn-primary" style="flex: 1;" onclick="app.currentPractice.subjectId = 'science'; app.switchTab('practice');">Practice</button>
+            <button class="btn btn-secondary" onclick="app.startTest('science'); app.switchTab('tests');">Test</button>
+          </div>
+        </div>
+
+        <!-- Social Science -->
+        <div class="subject-card">
+          <div>
+            <div class="subject-head">
+              <div class="subject-icon social">🌍</div>
+              <div>
+                <h4 style="font-size: 1.1rem;">Social Science</h4>
+                <span class="badge badge-slate">Civics & History</span>
+              </div>
+            </div>
+            <p class="subject-topics-list">
+              Indian Constitution, Democratic Organs, Physical Geography, World History, Economic Development.
+            </p>
+          </div>
+          <div style="display: flex; gap: 0.5rem;">
+            <button class="btn btn-primary" style="flex: 1;" onclick="app.currentPractice.subjectId = 'social_science'; app.switchTab('practice');">Practice</button>
+            <button class="btn btn-secondary" onclick="app.startTest('social_science'); app.switchTab('tests');">Test</button>
+          </div>
+        </div>
+
+        <!-- English -->
+        <div class="subject-card">
+          <div>
+            <div class="subject-head">
+              <div class="subject-icon english">📖</div>
+              <div>
+                <h4 style="font-size: 1.1rem;">English</h4>
+                <span class="badge badge-slate">Language Arts</span>
+              </div>
+            </div>
+            <p class="subject-topics-list">
+              Prepositions, Active/Passive Voice, Figures of Speech, Tenses, Advanced Vocabulary, Comprehension.
+            </p>
+          </div>
+          <div style="display: flex; gap: 0.5rem;">
+            <button class="btn btn-primary" style="flex: 1;" onclick="app.currentPractice.subjectId = 'english'; app.switchTab('practice');">Practice</button>
+            <button class="btn btn-secondary" onclick="app.startTest('computer'); app.switchTab('tests');">Test</button>
+          </div>
+        </div>
+
+        <!-- Hindi -->
+        <div class="subject-card">
+          <div>
+            <div class="subject-head">
+              <div class="subject-icon hindi">🇮🇳</div>
+              <div>
+                <h4 style="font-size: 1.1rem;">Hindi (हिंदी)</h4>
+                <span class="badge badge-slate">व्याकरण एवं साहित्य</span>
+              </div>
+            </div>
+            <p class="subject-topics-list">
+              संधि-विच्छेद, समास, मुहावरे और लोकोक्तियाँ, विलोम शब्द, पर्यायवाची, वाक्य शुद्धिकरण।
+            </p>
+          </div>
+          <div style="display: flex; gap: 0.5rem;">
+            <button class="btn btn-primary" style="flex: 1;" onclick="app.currentPractice.subjectId = 'hindi'; app.switchTab('practice');">Practice</button>
+            <button class="btn btn-secondary" onclick="app.startTest('computer'); app.switchTab('tests');">Test</button>
+          </div>
+        </div>
+
+        <!-- Computer Science -->
+        <div class="subject-card">
+          <div>
+            <div class="subject-head">
+              <div class="subject-icon cs">💻</div>
+              <div>
+                <h4 style="font-size: 1.1rem;">Computer Science</h4>
+                <span class="badge badge-slate">Logic & Coding</span>
+              </div>
+            </div>
+            <p class="subject-topics-list">
+              Python Syntax, Data Types, Control Structures, SQL Queries, Binary Logic, Data Structures (Queues, Stacks).
+            </p>
+          </div>
+          <div style="display: flex; gap: 0.5rem;">
+            <button class="btn btn-primary" style="flex: 1;" onclick="app.currentPractice.subjectId = 'computer'; app.switchTab('practice');">Practice</button>
+            <button class="btn btn-secondary" onclick="app.startTest('computer'); app.switchTab('tests');">Test</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================================
+         TAB 2: PRACTICE LAB
+         ========================================================================= -->
+    <section id="view-practice" class="tab-content">
+      <!-- Filter Bar -->
+      <div class="filter-bar">
+        <div class="filter-group" id="practiceSubjectFilters">
+          <span style="font-size: 0.8rem; font-weight: 700; color: var(--slate-500); margin-right: 0.25rem;">SUBJECT:</span>
+          <button class="filter-btn active" data-subject="mathematics">Mathematics</button>
+          <button class="filter-btn" data-subject="science">Science</button>
+          <button class="filter-btn" data-subject="social_science">Social Science</button>
+          <button class="filter-btn" data-subject="english">English</button>
+          <button class="filter-btn" data-subject="hindi">Hindi</button>
+          <button class="filter-btn" data-subject="computer">Computer Science</button>
+        </div>
+
+        <div class="filter-group" id="practiceDifficultyFilters" style="margin-left: auto;">
+          <span style="font-size: 0.8rem; font-weight: 700; color: var(--slate-500); margin-right: 0.25rem;">DIFFICULTY:</span>
+          <button class="filter-btn active" data-diff="all">All</button>
+          <button class="filter-btn" data-diff="easy">Easy</button>
+          <button class="filter-btn" data-diff="medium">Medium</button>
+          <button class="filter-btn" data-diff="hard">Hard</button>
+        </div>
+      </div>
+
+      <!-- Question Panel -->
+      <div class="question-panel">
+        <div class="question-meta">
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <span class="badge badge-primary" id="pqSubjectBadge">MATHEMATICS</span>
+            <span class="badge badge-slate" id="pqChapterBadge">Chapter Topic</span>
+          </div>
+          <span class="badge badge-amber" id="pqDiffBadge">Medium</span>
+        </div>
+
+        <h3 class="question-title" id="pqQuestionText">
+          Loading practice question...
+        </h3>
+
+        <!-- Options Grid -->
+        <div class="options-grid" id="pqOptionsContainer">
+          <!-- Dynamic Buttons injected here -->
+        </div>
+
+        <!-- Explanation Container -->
+        <div id="pqExplanationContainer" style="display: none;"></div>
+
+        <!-- Next Action Button -->
+        <div style="display: flex; justify-content: flex-end; margin-top: 1.5rem; border-top: 1px solid var(--slate-100); padding-top: 1rem;">
+          <button class="btn btn-primary" id="pqNextBtn" style="display: none;" onclick="app.generateNewPracticeQuestion()">
+            Continue to Next Question →
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================================
+         TAB 3: TIMED ASSESSMENTS & EXAMINATIONS
+         ========================================================================= -->
+    <section id="view-tests" class="tab-content">
+      <!-- Test Selection Lobby -->
+      <div id="testLobbyView" class="card">
+        <div class="card-header">
+          <span class="badge badge-purple">Assessment Center</span>
+          <h2 style="font-size: 1.5rem; margin-top: 0.25rem;">Standard Subject Assessments</h2>
+          <p style="font-size: 0.85rem; color: var(--slate-500);">
+            10-question timed tests with live scoring, question palette navigation, flagging for review, and 60% passing requirement.
+          </p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
+          <div style="padding: 1.5rem; border-radius: var(--radius-xl); border: 1px solid var(--slate-200); background: var(--slate-50); display: flex; flex-direction: column; justify-content: space-between; gap: 1rem;">
+            <div>
+              <span class="badge badge-primary">Mathematics</span>
+              <h3 style="font-size: 1.1rem; margin-top: 0.5rem;">Mathematics Term Assessment</h3>
+              <p style="font-size: 0.8rem; color: var(--slate-600); margin-top: 0.25rem;">10 Questions • 10 Minutes • Formulas & Problem Solving</p>
+            </div>
+            <button class="btn btn-primary" onclick="app.startTest('mathematics')">Start Math Exam</button>
+          </div>
+
+          <div style="padding: 1.5rem; border-radius: var(--radius-xl); border: 1px solid var(--slate-200); background: var(--slate-50); display: flex; flex-direction: column; justify-content: space-between; gap: 1rem;">
+            <div>
+              <span class="badge badge-emerald">Science</span>
+              <h3 style="font-size: 1.1rem; margin-top: 0.5rem;">Science & Inquiry Assessment</h3>
+              <p style="font-size: 0.8rem; color: var(--slate-600); margin-top: 0.25rem;">10 Questions • 10 Minutes • Physics, Chemistry & Biology</p>
+            </div>
+            <button class="btn btn-primary" onclick="app.startTest('science')">Start Science Exam</button>
+          </div>
+
+          <div style="padding: 1.5rem; border-radius: var(--radius-xl); border: 1px solid var(--slate-200); background: var(--slate-50); display: flex; flex-direction: column; justify-content: space-between; gap: 1rem;">
+            <div>
+              <span class="badge badge-amber">Social Science</span>
+              <h3 style="font-size: 1.1rem; margin-top: 0.5rem;">Social Studies Evaluation</h3>
+              <p style="font-size: 0.8rem; color: var(--slate-600); margin-top: 0.25rem;">10 Questions • 10 Minutes • History, Geography, Civics</p>
+            </div>
+            <button class="btn btn-primary" onclick="app.startTest('social_science')">Start Social Science Exam</button>
+          </div>
+
+          <div style="padding: 1.5rem; border-radius: var(--radius-xl); border: 1px solid var(--slate-200); background: var(--slate-50); display: flex; flex-direction: column; justify-content: space-between; gap: 1rem;">
+            <div>
+              <span class="badge badge-purple">Computer & Languages</span>
+              <h3 style="font-size: 1.1rem; margin-top: 0.5rem;">Language & Logic Test</h3>
+              <p style="font-size: 0.8rem; color: var(--slate-600); margin-top: 0.25rem;">10 Questions • 10 Minutes • English, Hindi & Computer Science</p>
+            </div>
+            <button class="btn btn-primary" onclick="app.startTest('computer')">Start IT & Language Exam</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Active Test Execution View (Hidden initially) -->
+      <div id="testActiveView" style="display: none;">
+        <!-- Timer Bar -->
+        <div class="test-timer-bar">
+          <div>
+            <span class="badge badge-primary" id="testHeaderTitle">Mathematics Exam</span>
+            <span style="font-size: 0.8rem; font-weight: 700; color: var(--slate-500); margin-left: 0.5rem;" id="testHeaderClass">Class 7</span>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 1rem;">
+            <div style="text-align: right;">
+              <span style="font-size: 0.65rem; text-transform: uppercase; font-weight: 700; color: var(--slate-400); display: block;">Time Remaining</span>
+              <span class="timer-display" id="testCountdownTimer">10:00</span>
+            </div>
+            <button class="btn btn-gold" onclick="app.submitTest()">Submit Exam</button>
+          </div>
+        </div>
+
+        <!-- Question Navigation Bubbles -->
+        <div class="question-navigator" id="testBubblesContainer">
+          <!-- 10 bubbles injected via JS -->
+        </div>
+
+        <!-- Question View -->
+        <div class="question-panel">
+          <div class="question-meta">
+            <span style="font-size: 0.85rem; font-weight: 800; color: var(--slate-700);" id="testQuestionIndexLabel">
+              Question 1 of 10
+            </span>
+            <button class="btn btn-secondary" style="padding: 0.35rem 0.75rem; font-size: 0.75rem;" id="testFlagBtn" onclick="app.toggleFlagQuestion()">
+              🚩 Flag for Review
+            </button>
+          </div>
+
+          <h3 class="question-title" id="testQuestionText">
+            Loading test question...
+          </h3>
+
+          <div class="options-grid" id="testOptionsContainer">
+            <!-- Injected via JS -->
+          </div>
+
+          <!-- Bottom Navigation Controls -->
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; border-top: 1px solid var(--slate-100); padding-top: 1.25rem;">
+            <button class="btn btn-secondary" id="testPrevBtn" onclick="app.prevTestQuestion()">
+              ← Previous
+            </button>
+            <button class="btn btn-primary" id="testNextBtn" onclick="app.nextTestQuestion()">
+              Next Question →
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Test Results View -->
+      <div id="testResultView" style="display: none;" class="card">
+        <div style="text-align: center; padding: 2rem 1rem;">
+          <div style="font-size: 3rem; margin-bottom: 0.5rem;" id="resultEmoji">🏆</div>
+          <span class="badge" id="resultBadge">Passed</span>
+          <h2 style="font-size: 2rem; margin: 0.5rem 0;" id="resultTitle">Assessment Completed!</h2>
+          <p style="font-size: 1.1rem; font-weight: 700; color: var(--slate-600);" id="resultScoreText">
+            You scored 8 / 10 (80%)
+          </p>
+          <p style="font-size: 0.85rem; color: var(--slate-500); max-width: 420px; margin: 0.5rem auto 1.5rem auto;" id="resultFeedback">
+            Congratulations! You have satisfied the test requirements for this class.
+          </p>
+
+          <div style="display: flex; justify-content: center; gap: 0.75rem;">
+            <button class="btn btn-primary" onclick="app.resetTestToLobby()">Back to Tests</button>
+            <button class="btn btn-secondary" onclick="app.switchTab('dashboard')">View Dashboard</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================================
+         TAB 4: CLASS PROMOTION & CURRICULUM ROADMAP
+         ========================================================================= -->
+    <section id="view-promotion" class="tab-content">
+      <div class="card" style="margin-bottom: 1.5rem;">
+        <div class="card-header">
+          <span class="badge badge-gold">Progression System</span>
+          <h2 style="font-size: 1.5rem; margin-top: 0.25rem;">Class Promotion & Graduation</h2>
+          <p style="font-size: 0.85rem; color: var(--slate-500);">
+            Students advance sequentially through Classes 7, 8, 9, 10, 11, and 12 upon demonstrating mastery in problem solving and evaluations.
+          </p>
+        </div>
+
+        <div style="background: var(--slate-50); border: 1px solid var(--slate-200); border-radius: var(--radius-xl); padding: 1.5rem; margin-bottom: 1.5rem;">
+          <h4 style="font-size: 1rem; margin-bottom: 0.75rem;">Current Grade Promotion Checklist</h4>
+          <div id="promoRequirementsList">
+            <!-- Injected via JS -->
+          </div>
+        </div>
+
+        <button id="promoMainActionBtn" class="btn btn-gold" style="width: 100%; font-size: 1rem; padding: 0.85rem;">
+          Graduate & Promote to Next Class 🎓
+        </button>
+      </div>
+
+      <!-- 7-12 Grade Cards -->
+      <h3 style="font-size: 1.25rem; margin-bottom: 1rem;">Complete School Progression (Grades 7–12)</h3>
+      <div class="subject-grid" id="promotionGradeGrid">
+        <!-- 6 class cards injected via JS -->
+      </div>
+    </section>
+
+    <!-- =========================================================================
+         TAB 5: ACADEMIC RECORDS TABLE
+         ========================================================================= -->
+    <section id="view-records" class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <span class="badge badge-emerald">Permanent Academic Ledger</span>
+          <h2 style="font-size: 1.5rem; margin-top: 0.25rem;">Class Progression History (Grades 7–12)</h2>
+          <p style="font-size: 0.85rem; color: var(--slate-500);">
+            Permanent verified record of solved questions, accuracy, and test completions saved locally in browser storage.
+          </p>
+        </div>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Class Grade</th>
+                <th>Status</th>
+                <th>Questions Solved</th>
+                <th>Accuracy</th>
+                <th>Tests Taken</th>
+                <th>Test Average</th>
+              </tr>
+            </thead>
+            <tbody id="recordsTableBody">
+              <!-- Injected via JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; margin-top: 1.5rem;">
+          <button class="btn btn-danger" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;" onclick="app.openResetModal()">
+            Reset All Student Progress
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================================
+         TAB 6: BADGES & HONORS
+         ========================================================================= -->
+    <section id="view-achievements" class="tab-content">
+      <div class="card" style="margin-bottom: 1.5rem;">
+        <div class="card-header">
+          <span class="badge badge-amber">Hall of Fame</span>
+          <h2 style="font-size: 1.5rem; margin-top: 0.25rem;">Scholastic Achievements & Honors</h2>
+          <p style="font-size: 0.85rem; color: var(--slate-500);">
+            Earn prestigious honors as you solve questions, maintain daily study streaks, pass examinations, and graduate to higher classes.
+          </p>
+        </div>
+
+        <div class="achievements-grid" id="achievementsGrid">
+          <!-- Injected via JS -->
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- =========================================================================
+       MODALS
+       ========================================================================= -->
+
+  <!-- Class Selection Modal -->
+  <div id="classModal" class="modal-backdrop">
+    <div class="modal-box">
+      <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">Select Academic Class</h3>
+      <p style="font-size: 0.85rem; color: var(--slate-500); margin-bottom: 1.25rem;">
+        Switch viewing mode to practice questions from any unlocked class grade:
+      </p>
+
+      <div id="classSelectButtonsContainer">
+        <!-- Injected via JS -->
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
+        <button class="btn btn-secondary" onclick="app.closeClassModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Promotion Celebration Modal -->
+  <div id="celebrationModal" class="modal-backdrop">
+    <div class="modal-box" style="text-align: center;">
+      <div style="font-size: 3.5rem; margin-bottom: 0.5rem;">🎓 🎉 👑</div>
+      <span class="badge badge-gold">Official Promotion</span>
+      <h2 style="font-size: 1.75rem; margin: 0.5rem 0;">Class Promotion Approved!</h2>
+      <p id="celebrationText" style="font-size: 0.95rem; color: var(--slate-600); margin-bottom: 1.5rem;">
+        You have fulfilled all required learning objectives and have been promoted to the next grade!
+      </p>
+      <button class="btn btn-primary" style="width: 100%;" onclick="app.closeCelebrationModal()">
+        Enter New Grade Curriculum →
+      </button>
+    </div>
+  </div>
+
+  <!-- Reset Confirmation Modal -->
+  <div id="resetModal" class="modal-backdrop">
+    <div class="modal-box">
+      <h3 style="font-size: 1.25rem; color: var(--rose-600); margin-bottom: 0.5rem;">⚠️ Confirm Reset</h3>
+      <p style="font-size: 0.85rem; color: var(--slate-600); margin-bottom: 1.25rem;">
+        Are you sure you want to reset all solved questions, test history, accuracy metrics, and class progression? This action cannot be undone.
+      </p>
+      <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+        <button class="btn btn-secondary" onclick="app.closeResetModal()">Cancel</button>
+        <button class="btn btn-danger" onclick="app.confirmResetProgress()">Yes, Reset Data</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Global Footer -->
+  <footer>
+    <div class="container footer-flex">
+      <div>
+        <strong style="color: white;">EduAscent</strong> — Classes 7 to 12 Interactive Learning Platform
+        <div style="font-size: 0.75rem; color: var(--slate-400); margin-top: 4px;">
+          Pure HTML5, CSS3 & Vanilla JavaScript (Zero Backend, 100% Client-Side with LocalStorage).
+        </div>
+      </div>
+      <div style="display: flex; gap: 0.5rem;">
+        <button class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.4rem 0.8rem; background: var(--slate-800); border-color: var(--slate-700); color: var(--slate-200);" onclick="app.downloadStandaloneHTML()">
+          📥 Download Standalone HTML
+        </button>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Application Script -->
+  <script type="module" src="/src/app.js"></script>
+</body>
+</html>
