@@ -6,6 +6,7 @@ import {
   Calculator,
   CheckCircle2,
   ChevronDown,
+  Code2,
   Globe,
   GraduationCap,
   Languages,
@@ -29,6 +30,7 @@ interface HomePageProps {
   onSelectClass: (cls: ClassLevel) => void;
   onSelectSubject: (sub: SubjectId) => void;
   onOpenAbout: () => void;
+  onOpenStandalone?: () => void;
 }
 
 export const HomePage: React.FC<HomePageProps> = ({
@@ -37,6 +39,7 @@ export const HomePage: React.FC<HomePageProps> = ({
   onSelectClass,
   onSelectSubject,
   onOpenAbout,
+  onOpenStandalone,
 }) => {
   const { state } = useStudent();
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
@@ -113,6 +116,17 @@ export const HomePage: React.FC<HomePageProps> = ({
             <Sparkles className="w-5 h-5 text-amber-500" />
             <span>Practice Now</span>
           </button>
+
+          {onOpenStandalone && (
+            <button
+              id="hero-standalone-btn"
+              onClick={onOpenStandalone}
+              className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-base shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <Code2 className="w-5 h-5 text-indigo-400" />
+              <span>HTML/CSS/JS Edition</span>
+            </button>
+          )}
         </div>
 
         {/* Student Status banner if returning */}

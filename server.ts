@@ -266,6 +266,22 @@ app.post('/api/stats/test-submit', (req: Request, res: Response) => {
   res.json({ success: true });
 });
 
+// Standalone Single-File HTML Routes
+app.get('/standalone.html', (req: Request, res: Response) => {
+  const filePath = path.join(process.cwd(), 'public', 'standalone.html');
+  res.sendFile(filePath);
+});
+
+app.get('/standalone', (req: Request, res: Response) => {
+  const filePath = path.join(process.cwd(), 'public', 'standalone.html');
+  res.sendFile(filePath);
+});
+
+app.get('/api/download-standalone', (req: Request, res: Response) => {
+  const filePath = path.join(process.cwd(), 'public', 'standalone.html');
+  res.download(filePath, 'eduascent_standalone.html');
+});
+
 // ---------------- VITE MIDDLEWARE / STATIC FILES ----------------
 async function startServer() {
   if (process.env.NODE_ENV !== 'production') {

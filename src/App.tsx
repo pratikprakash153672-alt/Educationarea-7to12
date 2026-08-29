@@ -15,6 +15,7 @@ import { HomePage } from './views/HomePage';
 import { LegalView } from './views/LegalView';
 import { PracticeView } from './views/PracticeView';
 import { ProgressView } from './views/ProgressView';
+import { StandaloneView } from './views/StandaloneView';
 import { SubjectsView } from './views/SubjectsView';
 import { TestSystemView } from './views/TestSystemView';
 
@@ -27,6 +28,7 @@ type TabView =
   | 'tests'
   | 'progress'
   | 'achievements'
+  | 'standalone'
   | 'about'
   | 'privacy'
   | 'terms'
@@ -130,6 +132,7 @@ const MainAppContent: React.FC = () => {
             onSelectClass={handleSelectClass}
             onSelectSubject={handleSelectSubject}
             onOpenAbout={() => navigateTo('about')}
+            onOpenStandalone={() => navigateTo('standalone')}
           />
         )}
 
@@ -178,6 +181,8 @@ const MainAppContent: React.FC = () => {
         {currentTab === 'progress' && <ProgressView />}
 
         {currentTab === 'achievements' && <AchievementsView />}
+
+        {currentTab === 'standalone' && <StandaloneView />}
 
         {currentTab === 'about' && <AboutView />}
 

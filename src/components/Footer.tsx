@@ -84,6 +84,11 @@ export const Footer: React.FC<FooterProps> = ({
             <h4 className="text-sm font-bold text-white">Platform Links</h4>
             <ul className="space-y-2">
               <li>
+                <button onClick={() => onNavigate('standalone')} className="text-amber-400 hover:text-amber-300 font-semibold flex items-center gap-1">
+                  <span>HTML/CSS/JS Standalone</span>
+                </button>
+              </li>
+              <li>
                 <button onClick={() => onNavigate('dashboard')} className="hover:text-white">
                   Student Dashboard
                 </button>

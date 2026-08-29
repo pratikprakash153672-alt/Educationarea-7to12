@@ -3,6 +3,7 @@ import {
   BookOpen,
   CheckCircle2,
   ChevronDown,
+  Code2,
   GraduationCap,
   Home,
   LayoutDashboard,
@@ -156,6 +157,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               { id: 'tests', label: 'Tests', icon: RotateCcw },
               { id: 'progress', label: 'Progress', icon: TrendingUp },
               { id: 'achievements', label: 'Badges', icon: Award },
+              { id: 'standalone', label: 'HTML/CSS/JS', icon: Code2 },
             ].map((item) => {
               const Icon = item.icon;
               const isActive = currentTab === item.id;
@@ -256,6 +258,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               { id: 'tests', label: 'Subject Tests', icon: RotateCcw },
               { id: 'progress', label: 'Progress Report', icon: TrendingUp },
               { id: 'achievements', label: 'Badges & Honors', icon: Award },
+              { id: 'standalone', label: 'HTML/CSS/JS Standalone', icon: Code2 },
             ].map((item) => {
               const Icon = item.icon;
               const isActive = currentTab === item.id;
