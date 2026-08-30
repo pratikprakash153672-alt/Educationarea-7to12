@@ -4,6 +4,17 @@
  */
 
 import { QuestionEngine } from './questions.js';
+import {
+  loginWithGoogle,
+  logoutUser,
+  onAuthUserChanged,
+  fetchStudentCloudData,
+  initStudentCloudProfile,
+  syncUserProfileToCloud,
+  saveClassRecordToCloud,
+  saveTestLogToCloud,
+  resetStudentCloudData
+} from './firebase.js';
 
 const STORAGE_KEY = 'edu_ascent_student_data_v2';
 
@@ -40,6 +51,8 @@ const INITIAL_STATE = {
 export const app = {
   state: null,
   activeTab: 'dashboard',
+  currentUser: null,
+  _toastTimeout: null,
 
   // Practice State
   currentPractice: {
@@ -66,6 +79,7 @@ export const app = {
     this.loadState();
     this.initConfetti();
     this.bindEvents();
+    this.initFirebaseAuth();
     this.renderAll();
     this.generateNewPracticeQuestion();
   },
@@ -134,6 +148,189 @@ export const app = {
         this.generateNewPracticeQuestion();
       });
     });
+  },
+
+  // --------------------------------------------------------------------------
+  // FIREBASE AUTH & CLOUD PERSISTENCE ENGINE
+  // --------------------------------------------------------------------------
+  initFirebaseAuth() {
+    // Desktop Google Sign In & Sign Out
+    document.getElementById('googleSignInBtn')?.addEventListener('click', () => this.handleSignIn());
+    document.getElementById('googleSignOutBtn')?.addEventListener('click', () => this.handleSignOut());
+
+    // Mobile drawer sign in/out
+    document.getElementById('mobileAuthActionBtn')?.addEventListener('click', () => {
+      if (this.currentUser) {
+        this.handleSignOut();
+      } else {
+        this.handleSignIn();
+      }
+    });
+
+    // Listen to Firebase auth changes
+    onAuthUserChanged(async (user) => {
+      this.currentUser = user;
+      this.updateAuthUI(user);
+
+      if (user) {
+        this.setCloudSyncStatus('syncing', 'Syncing...');
+        try {
+          const cloudData = await fetchStudentCloudData(user.uid);
+          if (cloudData) {
+            // Merge cloud state into active session
+            this.state.profile.name = cloudData.profile.name || user.displayName || this.state.profile.name;
+            this.state.profile.email = user.email || '';
+            this.state.profile.photoURL = user.photoURL || '';
+            this.state.profile.currentClass = Number(cloudData.profile.currentClass) || 7;
+            this.state.profile.viewingClass = Number(cloudData.profile.viewingClass) || this.state.profile.currentClass;
+            this.state.profile.streakDays = Number(cloudData.profile.streakDays) || 1;
+            this.state.profile.lastActiveDate = cloudData.profile.lastActiveDate || new Date().toISOString().split('T')[0];
+
+            for (let c = 7; c <= 12; c++) {
+              if (cloudData.classRecords[c]) {
+                this.state.classRecords[c] = cloudData.classRecords[c];
+              }
+            }
+
+            if (cloudData.testLogs && cloudData.testLogs.length > 0) {
+              this.state.testLogs = cloudData.testLogs;
+            }
+
+            this.checkAchievements();
+            this.saveState();
+            this.renderAll();
+            this.setCloudSyncStatus('synced', 'Firebase Synced');
+            this.updateCloudBanner(true);
+            this.showToast('☁️ Synced with Firebase Cloud');
+          } else {
+            // First time student logging in with this Google account: persist initial state
+            if (user.displayName) {
+              this.state.profile.name = user.displayName;
+            }
+            this.state.profile.email = user.email || '';
+            this.state.profile.photoURL = user.photoURL || '';
+
+            await initStudentCloudProfile(user, this.state);
+            this.saveState();
+            this.renderAll();
+            this.setCloudSyncStatus('synced', 'Firebase Synced');
+            this.updateCloudBanner(true);
+            this.showToast('🚀 Account created in Firebase Firestore');
+          }
+        } catch (error) {
+          console.error('Failed to sync student data with Firebase:', error);
+          this.setCloudSyncStatus('error', 'Sync Error');
+          this.showToast('⚠️ Could not connect to Firebase Firestore');
+        }
+      } else {
+        this.setCloudSyncStatus('local', 'Local Storage');
+        this.updateCloudBanner(false);
+      }
+    });
+  },
+
+  async handleSignIn() {
+    try {
+      this.setCloudSyncStatus('syncing', 'Signing in...');
+      await loginWithGoogle();
+      this.showToast('✅ Signed in with Google');
+    } catch (err) {
+      console.error('Google Sign-in failed', err);
+      this.setCloudSyncStatus('local', 'Local Storage');
+      this.showToast('⚠️ Sign-in cancelled or failed');
+    }
+  },
+
+  async handleSignOut() {
+    try {
+      await logoutUser();
+      this.showToast('Signed out of Firebase');
+      this.renderAll();
+    } catch (err) {
+      console.error('Sign-out failed', err);
+    }
+  },
+
+  updateAuthUI(user) {
+    const signInBtn = document.getElementById('googleSignInBtn');
+    const userProfileDropdown = document.getElementById('userProfileDropdown');
+    const userAvatarImg = document.getElementById('userAvatarImg');
+    const userAvatarFallback = document.getElementById('userAvatarFallback');
+    const userProfileName = document.getElementById('userProfileName');
+    const mobileAuthActionBtn = document.getElementById('mobileAuthActionBtn');
+
+    if (user) {
+      if (signInBtn) signInBtn.style.display = 'none';
+      if (userProfileDropdown) userProfileDropdown.style.display = 'inline-flex';
+      if (userProfileName) {
+        userProfileName.textContent = user.displayName ? user.displayName.split(' ')[0] : 'Student';
+      }
+      if (user.photoURL && userAvatarImg) {
+        userAvatarImg.src = user.photoURL;
+        userAvatarImg.style.display = 'block';
+        if (userAvatarFallback) userAvatarFallback.style.display = 'none';
+      } else if (userAvatarFallback) {
+        userAvatarFallback.textContent = (user.displayName || user.email || 'S')[0].toUpperCase();
+        userAvatarFallback.style.display = 'flex';
+        if (userAvatarImg) userAvatarImg.style.display = 'none';
+      }
+      if (mobileAuthActionBtn) {
+        mobileAuthActionBtn.textContent = 'Sign Out';
+        mobileAuthActionBtn.className = 'btn btn-secondary';
+      }
+    } else {
+      if (signInBtn) signInBtn.style.display = 'inline-flex';
+      if (userProfileDropdown) userProfileDropdown.style.display = 'none';
+      if (mobileAuthActionBtn) {
+        mobileAuthActionBtn.textContent = 'Sign In';
+        mobileAuthActionBtn.className = 'btn btn-primary';
+      }
+    }
+  },
+
+  setCloudSyncStatus(status, text) {
+    const pill = document.getElementById('cloudSyncStatusPill');
+    const label = document.getElementById('cloudSyncText');
+    if (pill) {
+      pill.className = `cloud-sync-pill ${status}`;
+    }
+    if (label) {
+      label.textContent = text;
+    }
+    const mobileLabel = document.getElementById('mobileSyncLabel');
+    if (mobileLabel) {
+      mobileLabel.textContent = `☁️ ${text}`;
+    }
+  },
+
+  updateCloudBanner(isSignedIn) {
+    const banner = document.getElementById('cloudSyncAlertBanner');
+    const title = document.getElementById('cloudAlertTitle');
+    const msg = document.getElementById('cloudAlertMsg');
+    if (!banner || !title || !msg) return;
+
+    if (isSignedIn) {
+      banner.className = 'cloud-alert-banner';
+      title.textContent = 'Firebase Cloud Synchronized';
+      msg.textContent = `Connected as ${this.currentUser?.email || 'Student'}. Your academic records, solved questions, and assessments are synced live to Firestore.`;
+    } else {
+      banner.className = 'cloud-alert-banner sync-pending';
+      title.textContent = 'Offline / Guest Mode';
+      msg.textContent = 'You are currently saving progress locally in your browser. Sign in with Google to sync your Class 7-12 achievements across all your devices via Firebase.';
+    }
+  },
+
+  showToast(message) {
+    const toast = document.getElementById('cloudToast');
+    const text = document.getElementById('cloudToastText');
+    if (toast && text) {
+      text.textContent = message;
+      toast.classList.add('show');
+      clearTimeout(this._toastTimeout);
+      this._toastTimeout = setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3500);
+    }
   },
 
   switchTab(tabId) {
@@ -313,6 +510,16 @@ export const app = {
     this.saveState();
     this.renderHeader();
     this.renderDashboard();
+
+    // Live Sync to Firebase Cloud if authenticated
+    if (this.currentUser) {
+      saveClassRecordToCloud(this.currentUser.uid, curCls, this.state.classRecords[curCls]).catch(err => {
+        console.error('Failed to sync class record to Firestore:', err);
+      });
+      syncUserProfileToCloud(this.currentUser.uid, this.state.profile).catch(err => {
+        console.error('Failed to sync profile to Firestore:', err);
+      });
+    }
 
     // Style option buttons
     document.querySelectorAll('#pqOptionsContainer .option-btn').forEach(btn => {
@@ -527,17 +734,29 @@ export const app = {
     rec.testsTaken += 1;
     rec.testAvg = Math.round((prevTotal + percent) / rec.testsTaken);
 
-    this.state.testLogs.unshift({
+    const newLog = {
       date: new Date().toLocaleDateString(),
       classLevel: curCls,
       subjectId: this.activeTest.subjectId,
       score: score,
       percent: percent,
       passed: passed
-    });
+    };
+
+    this.state.testLogs.unshift(newLog);
 
     this.checkAchievements();
     this.saveState();
+
+    // Live Sync to Firebase Cloud if authenticated
+    if (this.currentUser) {
+      saveClassRecordToCloud(this.currentUser.uid, curCls, rec).catch(err => {
+        console.error('Failed to sync test class record to Firestore:', err);
+      });
+      saveTestLogToCloud(this.currentUser.uid, newLog).catch(err => {
+        console.error('Failed to sync test log to Firestore:', err);
+      });
+    }
 
     // Show Results
     document.getElementById('testActiveView').style.display = 'none';
@@ -651,6 +870,13 @@ export const app = {
     this.checkAchievements();
     this.saveState();
     this.renderAll();
+
+    // Live Sync to Firebase Cloud if authenticated
+    if (this.currentUser) {
+      syncUserProfileToCloud(this.currentUser.uid, this.state.profile).catch(console.error);
+      saveClassRecordToCloud(this.currentUser.uid, cur, this.state.classRecords[cur]).catch(console.error);
+      saveClassRecordToCloud(this.currentUser.uid, next, this.state.classRecords[next]).catch(console.error);
+    }
 
     // Show celebration modal
     const modal = document.getElementById('celebrationModal');
@@ -769,6 +995,9 @@ export const app = {
       btn.onclick = () => {
         this.state.profile.viewingClass = c;
         this.saveState();
+        if (this.currentUser) {
+          syncUserProfileToCloud(this.currentUser.uid, this.state.profile).catch(console.error);
+        }
         this.renderAll();
         this.generateNewPracticeQuestion();
         this.closeClassModal();
@@ -792,14 +1021,22 @@ export const app = {
     document.getElementById('resetModal').classList.remove('open');
   },
 
-  confirmResetProgress() {
+  async confirmResetProgress() {
     localStorage.removeItem(STORAGE_KEY);
     this.state = JSON.parse(JSON.stringify(INITIAL_STATE));
     this.saveState();
+    if (this.currentUser) {
+      try {
+        await resetStudentCloudData(this.currentUser.uid);
+        this.showToast('🧹 Cloud progress reset successfully');
+      } catch (e) {
+        console.error('Failed to reset cloud data', e);
+      }
+    }
     this.closeResetModal();
     this.renderAll();
     this.generateNewPracticeQuestion();
-    alert('Student progress and academic history have been reset.');
+    this.showToast('Student progress and academic history have been reset.');
   },
 
   downloadStandaloneHTML() {

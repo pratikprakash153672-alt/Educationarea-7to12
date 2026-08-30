@@ -907,3 +907,229 @@ footer {
     flex-direction: row;
   }
 }
+
+/* =========================================================================
+   FIREBASE AUTH & CLOUD SYNC STYLES
+   ========================================================================= */
+
+.cloud-sync-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.cloud-sync-pill.local {
+  background: var(--slate-100);
+  color: var(--slate-600);
+  border: 1px solid var(--slate-200);
+}
+
+.cloud-sync-pill.synced {
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.cloud-sync-pill.syncing {
+  background: #eff6ff;
+  color: #1e40af;
+  border: 1px solid #bfdbfe;
+}
+
+.cloud-sync-pill.error {
+  background: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.sync-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.cloud-sync-pill.local .sync-dot {
+  background: var(--slate-400);
+}
+
+.cloud-sync-pill.synced .sync-dot {
+  background: #10b981;
+}
+
+.cloud-sync-pill.syncing .sync-dot {
+  background: #3b82f6;
+  animation: pulseSync 1.2s infinite ease-in-out;
+}
+
+.cloud-sync-pill.error .sync-dot {
+  background: #ef4444;
+}
+
+@keyframes pulseSync {
+  0% {
+    opacity: 0.4;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.25);
+  }
+  100% {
+    opacity: 0.4;
+    transform: scale(0.85);
+  }
+}
+
+.google-auth-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: white;
+  border: 1px solid var(--slate-300);
+  color: var(--slate-700);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.4rem 0.8rem;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.google-auth-btn:hover {
+  background: var(--slate-50);
+  border-color: var(--slate-400);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.google-auth-btn:active {
+  transform: scale(0.98);
+}
+
+.user-profile-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: white;
+  border: 1px solid var(--slate-200);
+  padding: 0.25rem 0.5rem 0.25rem 0.35rem;
+  border-radius: var(--radius-full);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.user-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.user-avatar-fallback {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: white;
+  font-weight: 700;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.user-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--slate-800);
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sign-out-btn {
+  background: transparent;
+  border: none;
+  color: var(--slate-500);
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.2rem 0.45rem;
+  border-radius: var(--radius-sm);
+  transition: all 0.15s ease;
+}
+
+.sign-out-btn:hover {
+  color: #ef4444;
+  background: #fef2f2;
+}
+
+.cloud-alert-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: var(--radius-lg);
+  padding: 0.85rem 1.1rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.85rem;
+  color: #166534;
+}
+
+.cloud-alert-banner.sync-pending {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  color: #1e40af;
+}
+
+.cloud-alert-icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.cloud-alert-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.cloud-alert-text strong {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.cloud-toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: var(--slate-900);
+  color: white;
+  padding: 0.75rem 1.2rem;
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  box-shadow: var(--shadow-lg);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.25s ease;
+  pointer-events: none;
+}
+
+.cloud-toast.show {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+

@@ -1,0 +1,111 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Student profile and academic progress metadata",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "maxLength": 128 },
+        "email": { "type": "string", "maxLength": 256 },
+        "displayName": { "type": "string", "maxLength": 128 },
+        "photoURL": { "type": "string", "maxLength": 512 },
+        "currentClass": { "type": "number" },
+        "viewingClass": { "type": "number" },
+        "streakDays": { "type": "number" },
+        "lastActiveDate": { "type": "string", "maxLength": 32 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format: "date-time" }
+      },
+      "required": [
+        "userId",
+        "email",
+        "displayName",
+        "currentClass",
+        "viewingClass",
+        "streakDays",
+        "lastActiveDate",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "ClassRecord": {
+      "title": "ClassRecord",
+      "description": "Academic performance record for a specific grade level",
+      "type": "object",
+      "properties": {
+        "classId": { "type": "string", "maxLength": 32 },
+        "classLevel": { "type": "number" },
+        "unlocked": { "type": "boolean" },
+        "completed": { "type": "boolean" },
+        "solved": { "type": "number" },
+        "correct": { "type": "number" },
+        "testsTaken": { "type": "number" },
+        "testAvg": { "type": "number" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "classId",
+        "classLevel",
+        "unlocked",
+        "completed",
+        "solved",
+        "correct",
+        "testsTaken",
+        "testAvg",
+        "updatedAt"
+      ]
+    },
+    "TestLog": {
+      "title": "TestLog",
+      "description": "Log of a completed subject assessment",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "userId": { "type": "string", "maxLength": 128 },
+        "classLevel": { "type": "number" },
+        "subjectId": { "type": "string", "maxLength": 64 },
+        "score": { "type": "number" },
+        "percent": { "type": "number" },
+        "passed": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "id",
+        "userId",
+        "classLevel",
+        "subjectId",
+        "score",
+        "percent",
+        "passed",
+        "createdAt"
+      ]
+    },
+    "TestConnection": {
+      "title": "TestConnection",
+      "description": "System health check document",
+      "type": "object",
+      "properties": {
+        "status": { "type": "string", "maxLength": 32 }
+      },
+      "required": ["status"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "Student user profiles and progression states"
+    },
+    "/users/{userId}/classRecords/{classId}": {
+      "schema": { "$ref": "#/entities/ClassRecord" },
+      "description": "Academic records per grade for the student"
+    },
+    "/users/{userId}/testLogs/{testLogId}": {
+      "schema": { "$ref": "#/entities/TestLog" },
+      "description": "Historical assessment results for the student"
+    },
+    "/test/connection": {
+      "schema": { "$ref": "#/entities/TestConnection" },
+      "description": "Connectivity test document"
+    }
+  }
+}

@@ -1,0 +1,133 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 1. Global Default Deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidUser(data) {
+      return data.userId is string && data.userId == request.auth.uid && data.userId.size() <= 128 &&
+             data.email is string && data.email.size() <= 256 &&
+             data.displayName is string && data.displayName.size() <= 128 &&
+             (!('photoURL' in data) || (data.photoURL is string && data.photoURL.size() <= 512)) &&
+             data.currentClass is number && data.currentClass >= 7 && data.currentClass <= 12 &&
+             data.viewingClass is number && data.viewingClass >= 7 && data.viewingClass <= 12 &&
+             data.streakDays is number && data.streakDays >= 0 &&
+             data.lastActiveDate is string && data.lastActiveDate.size() <= 32 &&
+             data.createdAt is timestamp &&
+             data.updatedAt is timestamp;
+    }
+
+    function isValidClassRecord(data) {
+      return data.classId is string && data.classId.size() <= 32 &&
+             data.classLevel is number && data.classLevel >= 7 && data.classLevel <= 12 &&
+             data.unlocked is bool &&
+             data.completed is bool &&
+             data.solved is number && data.solved >= 0 &&
+             data.correct is number && data.correct >= 0 &&
+             data.testsTaken is number && data.testsTaken >= 0 &&
+             data.testAvg is number && data.testAvg >= 0 && data.testAvg <= 100 &&
+             data.updatedAt is timestamp;
+    }
+
+    function isValidTestLog(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.userId is string && data.userId == request.auth.uid &&
+             data.classLevel is number && data.classLevel >= 7 && data.classLevel <= 12 &&
+             data.subjectId is string && data.subjectId.size() <= 64 &&
+             data.score is number && data.score >= 0 && data.score <= 10 &&
+             data.percent is number && data.percent >= 0 && data.percent <= 100 &&
+             data.passed is bool &&
+             data.createdAt is timestamp;
+    }
+
+    // Health check / Connection test document
+    match /test/connection {
+      allow get: if true;
+      allow list, write: if false;
+    }
+
+    // User Profile Document
+    match /users/{userId} {
+      allow get: if isValidId(userId) && isOwner(userId);
+      allow list: if false;
+
+      allow create: if isValidId(userId) && isOwner(userId) &&
+                       isValidUser(incoming()) &&
+                       incoming().createdAt == request.time &&
+                       incoming().updatedAt == request.time &&
+                       incoming().keys().hasAll(['userId', 'email', 'displayName', 'currentClass', 'viewingClass', 'streakDays', 'lastActiveDate', 'createdAt', 'updatedAt']) &&
+                       (incoming().keys().size() == 9 || (incoming().keys().size() == 10 && 'photoURL' in incoming()));
+
+      allow update: if isValidId(userId) && isOwner(userId) &&
+                       isValidUser(incoming()) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().updatedAt == request.time &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'photoURL', 'currentClass', 'viewingClass', 'streakDays', 'lastActiveDate', 'updatedAt']);
+
+      allow delete: if false;
+
+      // Subcollection: Class Records
+      match /classRecords/{classId} {
+        allow get, list: if isValidId(userId) && isOwner(userId);
+
+        allow create: if isValidId(userId) && isValidId(classId) && isOwner(userId) &&
+                         exists(/databases/$(database)/documents/users/$(userId)) &&
+                         isValidClassRecord(incoming()) &&
+                         incoming().updatedAt == request.time &&
+                         incoming().keys().hasAll(['classId', 'classLevel', 'unlocked', 'completed', 'solved', 'correct', 'testsTaken', 'testAvg', 'updatedAt']) &&
+                         incoming().keys().size() == 9;
+
+        allow update: if isValidId(userId) && isValidId(classId) && isOwner(userId) &&
+                         isValidClassRecord(incoming()) &&
+                         incoming().classId == existing().classId &&
+                         incoming().classLevel == existing().classLevel &&
+                         incoming().updatedAt == request.time &&
+                         incoming().diff(existing()).affectedKeys().hasOnly(['unlocked', 'completed', 'solved', 'correct', 'testsTaken', 'testAvg', 'updatedAt']);
+
+        allow delete: if isValidId(userId) && isOwner(userId);
+      }
+
+      // Subcollection: Test Logs
+      match /testLogs/{testLogId} {
+        allow get, list: if isValidId(userId) && isOwner(userId);
+
+        allow create: if isValidId(userId) && isValidId(testLogId) && isOwner(userId) &&
+                         exists(/databases/$(database)/documents/users/$(userId)) &&
+                         isValidTestLog(incoming()) &&
+                         incoming().createdAt == request.time &&
+                         incoming().keys().hasAll(['id', 'userId', 'classLevel', 'subjectId', 'score', 'percent', 'passed', 'createdAt']) &&
+                         incoming().keys().size() == 8;
+
+        allow update: if false;
+
+        allow delete: if isValidId(userId) && isOwner(userId);
+      }
+    }
+  }
+}
